@@ -1,0 +1,177 @@
+{
+  "version": "1.0.0",
+  "description": "Configurable scoring rules for Skill Quality Gate",
+
+  "dimensions": {
+    "code_quality": {
+      "weight": 25,
+      "checks": {
+        "skill_md_structure": {
+          "max_points": 5,
+          "thresholds": {
+            "excellent": { "min_lines": 50, "points": 5 },
+            "good": { "min_lines": 20, "points": 3 },
+            "poor": { "min_lines": 0, "points": 1 }
+          }
+        },
+        "script_structure": {
+          "max_points": 5,
+          "criteria": {
+            "has_shebang": 2,
+            "has_set_options": 2,
+            "clear_organization": 1
+          }
+        },
+        "code_size": {
+          "max_points": 5,
+          "thresholds": {
+            "optimal": { "max_lines": 500, "points": 5 },
+            "acceptable": { "max_lines": 1000, "points": 3 },
+            "large": { "max_lines": 2000, "points": 1 }
+          },
+          "exclude_dirs": ["data/", "node_modules/", ".git/"]
+        },
+        "comment_coverage": {
+          "max_points": 5,
+          "thresholds": {
+            "excellent": { "min_ratio": 0.15, "points": 5 },
+            "good": { "min_ratio": 0.10, "points": 4 },
+            "acceptable": { "min_ratio": 0.05, "points": 2 },
+            "poor": { "min_ratio": 0, "points": 1 }
+          }
+        },
+        "no_complex_nesting": {
+          "max_points": 5,
+          "max_depth": 4
+        }
+      }
+    },
+
+    "documentation": {
+      "weight": 20,
+      "checks": {
+        "has_description": {
+          "max_points": 4,
+          "keywords": ["description", "overview", "purpose", "about"]
+        },
+        "has_trigger_conditions": {
+          "max_points": 4,
+          "keywords": ["trigger", "when to use", "activation", "invoked"]
+        },
+        "has_examples": {
+          "max_points": 4,
+          "keywords": ["example", "usage", "demo", "sample"]
+        },
+        "has_parameters": {
+          "max_points": 4,
+          "keywords": ["parameter", "argument", "option", "input", "config"]
+        },
+        "has_readme": {
+          "max_points": 4,
+          "files": ["README.md", "readme.md"]
+        }
+      }
+    },
+
+    "security": {
+      "weight": 30,
+      "scoring": {
+        "base_score": 30,
+        "deductions": {
+          "critical_per_issue": 10,
+          "critical_cap": 25,
+          "high_1_2": 5,
+          "high_3_plus": 10,
+          "medium_per_issue": 1
+        }
+      },
+      "audit_script": "~/.claude/scripts/audit-skill-security.sh"
+    },
+
+    "functionality": {
+      "weight": 15,
+      "checks": {
+        "has_dependencies_doc": {
+          "max_points": 4,
+          "keywords": ["require", "dependency", "prerequisite", "need.*install"]
+        },
+        "has_error_handling": {
+          "max_points": 4,
+          "patterns": ["set -e", "trap", "try", "catch", "except", "|| exit", "if ["]
+        },
+        "has_formatted_output": {
+          "max_points": 4,
+          "patterns": ["echo", "print", "console.log", "format"]
+        },
+        "no_dead_code": {
+          "max_points": 3,
+          "heuristics": ["unused_functions", "unreachable_code"]
+        }
+      }
+    },
+
+    "maintainability": {
+      "weight": 5,
+      "checks": {
+        "popularity": {
+          "max_points": 2,
+          "thresholds": {
+            "popular": { "min_stars": 100, "points": 2 },
+            "moderate": { "min_stars": 10, "points": 1 }
+          }
+        },
+        "version_tracking": {
+          "max_points": 2,
+          "keywords": ["version", "changelog", "v[0-9]"]
+        },
+        "recent_updates": {
+          "max_points": 1,
+          "threshold_days": 180
+        }
+      },
+      "data_source": {
+        "primary": "~/.claude/skills/skill-manager/data/all_skills_with_cn.json",
+        "fallback": "github_api"
+      }
+    },
+
+    "community": {
+      "weight": 5,
+      "checks": {
+        "official_source": {
+          "max_points": 3,
+          "patterns": ["anthropic", "official"]
+        },
+        "author_identified": {
+          "max_points": 1
+        },
+        "install_count": {
+          "max_points": 2,
+          "thresholds": {
+            "high": { "min_installs": 100, "points": 2 },
+            "moderate": { "min_installs": 10, "points": 1 }
+          }
+        }
+      }
+    }
+  },
+
+  "grades": {
+    "excellent": { "min_score": 90, "stars": 5, "label": "Excellent (Highly Recommended)" },
+    "good": { "min_score": 75, "stars": 4, "label": "Good (Recommended)" },
+    "acceptable": { "min_score": 60, "stars": 3, "label": "Acceptable (Usable with improvements)" },
+    "poor": { "min_score": 40, "stars": 2, "label": "Poor (Needs optimization)" },
+    "not_recommended": { "min_score": 0, "stars": 1, "label": "Not Recommended" }
+  },
+
+  "exit_codes": {
+    "safe": { "code": 0, "condition": "score >= 60" },
+    "warning": { "code": 1, "condition": "score >= 40 && score < 60" },
+    "danger": { "code": 2, "condition": "score < 40 || critical_issues > 0" }
+  },
+
+  "whitelist": {
+    "file": "~/.claude/config/trusted-skills.txt",
+    "skip_assessment": true
+  }
+}
