@@ -36,3 +36,6 @@ Temporary Items
 .project
 .classpath
 .settings/
+
+# Community posts and announcements (not tracked in git)
+Post/
