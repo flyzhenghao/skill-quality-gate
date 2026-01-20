@@ -255,8 +255,8 @@ assess_security() {
     log_info "Assessing security..."
     local score=30  # Start with full score, deduct for issues
 
-    # Security audit script location
-    local audit_script="$HOME/.claude/scripts/audit-skill-security.sh"
+    # Security audit script location (v2 - context-aware)
+    local audit_script="$HOME/.claude/scripts/audit-skill-security-v2.sh"
     local temp_report="/tmp/security-audit-$$.md"
 
     if file_exists "$audit_script"; then
