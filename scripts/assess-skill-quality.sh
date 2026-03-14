@@ -13,7 +13,23 @@ set -euo pipefail
 
 # Configuration
 SKILL_DIR="${1:?Error: Please provide skill directory path}"
-REPORT_FILE="${2:-skill-quality-report.md}"
+
+# 智能默认输出路径
+if [ -z "${2:-}" ]; then
+    # 提取 skill 名称
+    SKILL_NAME=$(basename "$SKILL_DIR")
+    DATE=$(date +%Y-%m-%d)
+
+    # 检测是否在 Personal Digital Twin 项目中
+    if [ -d "meta/reports" ]; then
+        REPORT_FILE="meta/reports/${DATE}-skill-quality-${SKILL_NAME}.md"
+    else
+        # 全局默认（临时目录）
+        REPORT_FILE="/tmp/skill-quality-${SKILL_NAME}-${DATE}.md"
+    fi
+else
+    REPORT_FILE="$2"
+fi
 
 # Get script directory for relative imports
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -162,10 +178,12 @@ assess_code_quality() {
     local comment_lines=0
     while IFS= read -r file; do
         if [[ "$file" != *"/data/"* ]] && [[ "$file" != *"/node_modules/"* ]]; then
-            local fl tl cl
+            local fl cl
             fl=$(count_lines "$file")
+            fl=${fl:-0}  # Default to 0 if empty
             total_lines=$((total_lines + fl))
-            cl=$(grep -c '^[[:space:]]*#\|^[[:space:]]*//\|^[[:space:]]*\*' "$file" 2>/dev/null || echo 0)
+            cl=$(grep -c '^[[:space:]]*#\|^[[:space:]]*//\|^[[:space:]]*\*' "$file" 2>/dev/null || echo "0")
+            cl=${cl:-0}  # Default to 0 if empty
             comment_lines=$((comment_lines + cl))
         fi
     done < <(find "$SKILL_DIR" -type f \( -name "*.sh" -o -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" \) 2>/dev/null)
